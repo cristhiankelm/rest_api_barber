@@ -32,7 +32,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('user.regist
 
 // Protected routes
 Route::group(['middleware' => ['auth:sanctum']], function () {
-        Route::get('/random', [BarberController::class, 'createRandom']);
+//    Route::get('/random', [BarberController::class, 'createRandom']);
 
     Route::post('/auth/logout', [AuthController::class, 'logout'])->name('logout');
     Route::post('/auth/refresh', [AuthController::class, 'refresh'])->name('refresh');
