@@ -76,4 +76,30 @@ class UserController extends Controller
         return $array;
     }
 
+    public function getAppointments() {
+        $array = ['error'=>'', 'list'=>[]];
+
+        $apps = UserAppointment::select()
+            ->where('id_user', auth()->user()->getAuthIdentifier())
+            ->orderBy('ap_datetime', 'DESC')
+            ->get();
+
+        if($apps) {
+            foreach($apps as $app) {
+                $barber = Barber::find($app['id_barber']);
+
+                $service = BarberServices::find($app['id_service']);
+
+                $array['list'][] = [
+                    'id' => $app['id'],
+                    'datetime' => $app['ap_datetime'],
+                    'barber' => $barber,
+                    'service' => $service
+                ];
+            }
+        }
+
+        return $array;
+    }
+
 }
