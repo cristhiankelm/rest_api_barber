@@ -19,8 +19,6 @@ use App\Http\Controllers\Api\UserController;
 |
 */
 
-// Route::resource('products', ProductController::class);
-
 // Public routes
 
 Route::get('/401', [AuthController::class, 'unauthorized'])->name('login');
@@ -41,7 +39,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user', [UserController::class, 'read'])->name('user.read');
     Route::put('/user', [UserController::class, 'update'])->name('user.update');
     Route::get('/user/favorites', [UserController::class, 'getFavorites'])->name('user.getFavorites');
-    Route::post('/user/favorite', [UserController::class, 'addFavorite'])->name('user.addFavorite');
+    Route::post('/user/favorite', [UserController::class, 'toggleFavorite'])->name('user.toggleFavorite');
     Route::get('/user/appointments', [UserController::class, 'getAppointments'])->name('user.GetAppointments');
 
     Route::get('/barbers', [BarberController::class, 'list'])->name('barber.list');

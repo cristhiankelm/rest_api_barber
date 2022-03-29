@@ -6,24 +6,58 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+
+use App\Models\User;
+use App\Models\Api\UserAppointment;
+use App\Models\Api\UserFavorite;
+use App\Models\Api\Barber;
+use App\Models\Api\BarberServices;
 
 class UserController extends Controller
 {
-    private $loggedUser;
-
     public function read()
     {
         $array = ['error' => ''];
 
-
-        $this->loggedUser = auth()->user();
-        $info = $this->loggedUser;
+        $info = $this->loggedUser = auth()->user();
         $info['avatar'] = url('media/avatars/' . $info['avatar']);
         $array['data'] = $info;
-
 
         return $array;
     }
 
+    public function toggleFavorite(Request $request)
+    {
+        $array = ['error' => ''];
+
+        $id_barber = $request->input('barber');
+
+        $barber = Barber::find($id_barber);
+
+        if ($barber) {
+            $fav = UserFavorite::select()
+                ->where('id_user', auth()->user()->getAuthIdentifier())
+                ->where('id_barber', $id_barber)
+                ->first();
+
+            if ($fav) {
+                // remover
+                $fav->delete();
+                $array['have'] = false;
+            } else {
+                // adicionar
+                $newFav = new UserFavorite();
+                $newFav->id_user = auth()->user()->getAuthIdentifier();
+                $newFav->id_barber = $id_barber;
+                $newFav->save();
+                $array['have'] = true;
+            }
+        } else {
+            $array['error'] = 'Barbeiro inexistente';
+        }
+
+        return $array;
+    }
 
 }
