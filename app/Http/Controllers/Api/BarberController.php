@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\Api\UserAppointment;
+use App\Models\Api\UserFavorite;
 use App\Models\Api\Barber;
 use App\Models\Api\BarberAvailability;
 use App\Models\Api\BarberPhotos;
@@ -99,8 +100,8 @@ class BarberController extends Controller
         $lat = $request->input('lat');
         $lng = $request->input('lng');
         $city = $request->input('city');
-        $offset= $request->input('offset');
-        if (!$offset){
+        $offset = $request->input('offset');
+        if (!$offset) {
             $offset = 0;
         }
 
@@ -126,7 +127,7 @@ class BarberController extends Controller
         $barbers = Barber::select(Barber::raw('*, SQRT(POW(69.1 * (latitude - ' . floatval($lat) . '), 2)
             + POW(69.1 * (' . floatval($lng) . ' - longitude)
             * COS(latitude / 57.3), 2)) AS distance'))
-//            ->havingRaw('distance < ?', [10]) distancia em kilometros = 10
+//            ->havingRaw('distance < ?', [10]) distancia em kilometros = {10}
 //            ->orderBy('distance', 'ASC')
             ->offset($offset)
             ->limit(5)
@@ -146,11 +147,18 @@ class BarberController extends Controller
 
         if ($barber) {
             $barber['avatar'] = url('media/avatars' . $barber['avatar']);
-            $barber['favorited'] = false;
+            $barber['favorite'] = false;
             $barber['photos'] = [];
             $barber['services'] = [];
             $barber['testimonials'] = [];
             $barber['available'] = [];
+
+            // Verificando favorito
+            $countFavorite = UserFavorite::where('id_barber', $barber->id)
+                ->count();
+            if ($countFavorite > 0) {
+                $barber['favorite'] = true;
+            }
 
             // Pegando as fotos do barberiro
             $barber['photos'] = BarberPhotos::where('id_barber', $barber->id)
@@ -166,8 +174,56 @@ class BarberController extends Controller
                 ->where('id_barber', $barber->id)
                 ->get();
 
-            // Pegando dispobilidade do barberiro
+            // Pegando disponibilidade do Barbeiro
+            $availability = [];
 
+            // - Pegando a disponibilidade crua
+            $avails = BarberAvailability::where('id_barber', $barber->id)->get();
+            $availWeekdays = [];
+            foreach ($avails as $item) {
+                $availWeekdays[$item['weekday']] = explode(',', $item['hours']);
+            }
+
+            // - Pegar os agendamentos dos próximos 20 dias
+            $appointments = [];
+            $appQuery = UserAppointment::where('id_barber', $barber->id)
+                ->whereBetween('ap_datetime', [
+                    date('Y-m-d') . ' 00:00:00',
+                    date('Y-m-d', strtotime('+20 days')) . ' 23:59:59'
+                ])
+                ->get();
+            foreach ($appQuery as $appItem) {
+                $appointments[] = $appItem['ap_datetime'];
+            }
+
+            // - Gerar disponibilidade real
+            for ($q = 0; $q < 20; $q++) {
+                $timeItem = strtotime('+' . $q . ' days');
+                $weekday = date('w', $timeItem);
+
+                if (in_array($weekday, array_keys($availWeekdays))) {
+                    $hours = [];
+
+                    $dayItem = date('Y-m-d', $timeItem);
+
+                    foreach ($availWeekdays[$weekday] as $hourItem) {
+                        $dayFormatted = $dayItem . ' ' . $hourItem . ':00';
+                        if (!in_array($dayFormatted, $appointments)) {
+                            $hours[] = $hourItem;
+                        }
+                    }
+
+                    if (count($hours) > 0) {
+                        $availability[] = [
+                            'date' => $dayItem,
+                            'hours' => $hours
+                        ];
+                    }
+
+                }
+            }
+
+            $barber['available'] = $availability;
 
             $array['data'] = $barber;
 
