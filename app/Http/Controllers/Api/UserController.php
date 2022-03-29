@@ -60,4 +60,20 @@ class UserController extends Controller
         return $array;
     }
 
+    public function getFavorites() {
+        $array = ['error'=>'', 'list'=>[]];
+
+        $favs = UserFavorite::select()
+            ->where('id_user', auth()->user()->getAuthIdentifier())
+            ->get();
+
+        if($favs) {
+            foreach($favs as $fav) {
+                $barber = Barber::find($fav['id_barber']);
+                $array['list'][] = $barber;
+            }
+        }
+        return $array;
+    }
+
 }
