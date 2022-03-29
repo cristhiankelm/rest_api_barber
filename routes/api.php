@@ -38,6 +38,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::get('/user', [UserController::class, 'read'])->name('user.read');
     Route::put('/user', [UserController::class, 'update'])->name('user.update');
+    Route::post('/user/avatar', [UserController::class, 'updateAvatar'])->name('updateAvatar');
     Route::get('/user/favorites', [UserController::class, 'getFavorites'])->name('user.getFavorites');
     Route::post('/user/favorite', [UserController::class, 'toggleFavorite'])->name('user.toggleFavorite');
     Route::get('/user/appointments', [UserController::class, 'getAppointments'])->name('user.GetAppointments');

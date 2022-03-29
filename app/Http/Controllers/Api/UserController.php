@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Intervention\Image\Facades\Image;
 
 use App\Models\User;
 use App\Models\Api\UserAppointment;
@@ -20,7 +21,7 @@ class UserController extends Controller
     {
         $array = ['error' => ''];
 
-        $info = $this->loggedUser = auth()->user();
+        $info = auth()->user();
         $info['avatar'] = url('media/avatars/' . $info['avatar']);
         $array['data'] = $info;
 
@@ -138,6 +139,33 @@ class UserController extends Controller
             $user->password = password_hash($password, PASSWORD_DEFAULT);
         }
 
+        $user->save();
+
+        return $array;
+    }
+
+    public function updateAvatar(Request $request) {
+        $array = ['error'=>''];
+
+        $rules = [
+            'avatar' => 'required|image|mimes:png,jpg,jpeg'
+        ];
+        $validator = Validator::make($request->all(), $rules);
+        if($validator->fails()) {
+            $array['error'] = $validator->messages();
+            return $array;
+        }
+
+        $avatar = $request->file('avatar');
+
+        $dest = public_path('/media/avatars');
+        $avatarName = md5(time().rand(0,9999)).'.jpg';
+
+        $img = Image::make($avatar->getRealPath());
+        $img->fit(300, 300)->save($dest.'/'.$avatarName);
+
+        $user = User::find(auth()->user()->getAuthIdentifier());
+        $user->avatar = $avatarName;
         $user->save();
 
         return $array;
