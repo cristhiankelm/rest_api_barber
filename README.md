@@ -1,7 +1,8 @@
 ## Instalação
-git clone https://github.com/cristhiankelm/rest_api_barber.git
-cd rest_api_barber
-./vendor/bin/sail up
+
+git clone https://github.com/cristhiankelm/rest_api_barber.git <br>
+cd rest_api_barber <br>
+./vendor/bin/sail up <br>
 
 projeto rodando com o <b>Laravel-Sail</b>
 
