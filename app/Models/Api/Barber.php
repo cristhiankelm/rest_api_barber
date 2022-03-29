@@ -11,4 +11,13 @@ class Barber extends Model
 
     protected $table = 'barbers';
     public $timestamps = false;
+
+    /**
+     * @param $value
+     * @return string
+     */
+    public function getAvatarAttribute($value): string
+    {
+        return url("media/avatars/{$value}");
+    }
 }
