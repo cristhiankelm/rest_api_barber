@@ -11,4 +11,9 @@ class BarberPhotos extends Model
 
     protected $table = 'barber_photos';
     public $timestamps = false;
+
+    public function getUrlAttribute($value): string
+    {
+        return url("media/avatars/{$value}");
+    }
 }

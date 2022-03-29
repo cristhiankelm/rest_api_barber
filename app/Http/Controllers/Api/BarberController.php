@@ -137,4 +137,45 @@ class BarberController extends Controller
 
         return $array;
     }
+
+    public function one($id)
+    {
+        $array = ['error' => ''];
+
+        $barber = Barber::find($id);
+
+        if ($barber) {
+            $barber['avatar'] = url('media/avatars' . $barber['avatar']);
+            $barber['favorited'] = false;
+            $barber['photos'] = [];
+            $barber['services'] = [];
+            $barber['testimonials'] = [];
+            $barber['available'] = [];
+
+            // Pegando as fotos do barberiro
+            $barber['photos'] = BarberPhotos::where('id_barber', $barber->id)
+                ->get();
+
+            // Pegando os serviços do barbeiro
+            $barber['services'] = BarberServices::select(['id', 'name', 'price'])
+                ->where('id_barber', $barber->id)
+                ->get();
+
+            // Pegando os depoimentos do barbeiro
+            $barber['testimonials'] = BarberTestimonial::select(['id', 'name', 'rate', 'body'])
+                ->where('id_barber', $barber->id)
+                ->get();
+
+            // Pegando dispobilidade do barberiro
+
+
+            $array['data'] = $barber;
+
+        } else {
+            $array['error'] = 'Barbeiro não encontrado';
+        }
+
+
+        return $array;
+    }
 }
