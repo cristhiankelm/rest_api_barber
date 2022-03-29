@@ -99,6 +99,10 @@ class BarberController extends Controller
         $lat = $request->input('lat');
         $lng = $request->input('lng');
         $city = $request->input('city');
+        $offset= $request->input('offset');
+        if (!$offset){
+            $offset = 0;
+        }
 
         if (!empty($city)) {
             $res = $this->searchGeo($city);
@@ -122,8 +126,10 @@ class BarberController extends Controller
         $barbers = Barber::select(Barber::raw('*, SQRT(POW(69.1 * (latitude - ' . floatval($lat) . '), 2)
             + POW(69.1 * (' . floatval($lng) . ' - longitude)
             * COS(latitude / 57.3), 2)) AS distance'))
-            ->havingRaw('distance < ?', [10])
-            ->orderBy('distance', 'ASC')
+//            ->havingRaw('distance < ?', [10]) distancia em kilometros = 10
+//            ->orderBy('distance', 'ASC')
+            ->offset($offset)
+            ->limit(5)
             ->get();
 
         $array['data'] = $barbers;

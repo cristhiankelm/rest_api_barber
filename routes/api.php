@@ -30,6 +30,7 @@ Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register'])->name('user.register');
 
 
+
 // Protected routes
 Route::group(['middleware' => ['auth:sanctum']], function () {
 //    Route::get('/random', [BarberController::class, 'createRandom']);
